@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,17 +36,23 @@ public class MainActivity extends AppCompatActivity {
     TextView textView;
     int startHour, endHour;
     Boolean showNotification = true;
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textView = (TextView) findViewById(R.id.TView);
+        textView = findViewById(R.id.TView);
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setMax(100);
+        progressBar.setRotation(-90);
+        progressBar.setRotationY(180);
+
         builder = new Notification.Builder(this, CHANNEL_ID);
         builder.setOngoing(true);
         notificationManagerCompat = NotificationManagerCompat.from(this);
 
-            //update current time view after every 1 seconds
-            handler.postDelayed(updateTask,1000);
+        handler.postDelayed(updateTask,100);
     }
 
     public void displayNotification(String shortText, String fullText) {
@@ -99,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             if(showNotification)
                 updateCurrentTime();
-            handler.postDelayed(this,1000);
+            handler.postDelayed(this,100);
         }
     };
 
@@ -123,8 +130,9 @@ public class MainActivity extends AppCompatActivity {
 
             if(currentSecondPercent > 0)
             {
+                progressBar.setProgress((int)currentSecondPercent);
                 showNotification = true;
-                result = String.format("%.2f", currentSecondPercent) + "%";
+                result = String.format("%.3f", currentSecondPercent) + "%";
                 displayNotification(result.substring(0,2) + "%", result);
             }
             else
