@@ -19,6 +19,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_ID = 1945;
     private static final String CHANNEL_ID = "TimeLeftNotifier";
+    private static final long TIME_DELAYED = 500;
     final Handler handler=new Handler();
     Notification.Builder builder = null;
     NotificationManagerCompat notificationManagerCompat = null;
@@ -38,11 +40,13 @@ public class MainActivity extends AppCompatActivity {
     Boolean showNotification = true;
     ProgressBar progressBar;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         textView = findViewById(R.id.TView);
+        textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
         progressBar = findViewById(R.id.progressBar);
         progressBar.setMax(100);
         progressBar.setRotation(-90);
@@ -52,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setOngoing(true);
         notificationManagerCompat = NotificationManagerCompat.from(this);
 
-        handler.postDelayed(updateTask,100);
+        handler.postDelayed(updateTask, TIME_DELAYED);
     }
 
     public void displayNotification(String shortText, String fullText) {
@@ -68,19 +72,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         createNotificationChannel();
-    }
-
-    private void createNotificationChannel() {
-        CharSequence name = "testing";
-        String description = "i'm testing this notification";
-        int importance = NotificationManager.IMPORTANCE_LOW;
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-        channel.setDescription(description);
-        // Register the channel with the system; you can't change the importance
-        // or other notification behaviors after this
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        assert notificationManager != null;
-        notificationManager.createNotificationChannel(channel);
     }
 
     private Bitmap createBitmapFromString(String inputNumber) {
@@ -99,18 +90,6 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawText(inputNumber, textBounds.width() / 2 + 5, 70, paint);
         return bitmap;
     }
-
-
-    final Runnable updateTask=new Runnable() {
-        @Override
-        public void run() {
-            if(showNotification)
-                updateCurrentTime();
-            handler.postDelayed(this,100);
-        }
-    };
-
-
 
     public void updateCurrentTime(){
         Calendar calendar = Calendar.getInstance();
@@ -132,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 progressBar.setProgress((int)currentSecondPercent);
                 showNotification = true;
+
                 result = String.format("%.3f", currentSecondPercent) + "%";
                 displayNotification(result.substring(0,2) + "%", result);
             }
@@ -142,8 +122,27 @@ public class MainActivity extends AppCompatActivity {
         textView.setText(result);
     }
 
+    private void createNotificationChannel() {
+        CharSequence name = "testing";
+        String description = "i'm testing this notification";
+        int importance = NotificationManager.IMPORTANCE_LOW;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+        channel.setDescription(description);
+        // Register the channel with the system; you can't change the importance
+        // or other notification behaviors after this
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        assert notificationManager != null;
+        notificationManager.createNotificationChannel(channel);
+    }
     public int hourToSeconds(int hour){
         return hour * 60 * 60;
     }
-
+    final Runnable updateTask=new Runnable() {
+        @Override
+        public void run() {
+            if(showNotification)
+                updateCurrentTime();
+            handler.postDelayed(this,TIME_DELAYED);
+        }
+    };
 }
